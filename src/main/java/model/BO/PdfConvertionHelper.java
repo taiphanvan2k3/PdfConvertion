@@ -10,17 +10,33 @@ import com.spire.pdf.FileFormat;
 import com.spire.pdf.PdfDocument;
 
 public class PdfConvertionHelper {
+	private static final String OUTPUT_FOLDER = "output";
 	private static final int MAX_PAGES_PER_FILE = 10;
 
-	private void splitPdf(String filePath) {
+	private void convertPdfToDoc(String fileInput, String fileOutput) {
+		Thread t = new Thread(() -> {
+			ArrayList<String> pathOfChunkFiles = this.splitPdf(fileInput);
+			ArrayList<String> fileDocxPaths = this.convertChunkPdfToDocx(pathOfChunkFiles);
+			Collections.sort(fileDocxPaths);
+			CombineDocx.combineFiles(fileDocxPaths, OUTPUT_FOLDER + "/" + fileOutput);
+		});
+		t.start();
+	}
+
+	/**
+	 * Convert file pdf thành các file pdf nhỏ hơn mà mỗi file chứa tối đa 10 trang
+	 * 
+	 * @param filePath Đường dẫn file đầu vào
+	 * @return ArrayList<String>: đường dẫn của các file pdf được chunk ra
+	 */
+	private ArrayList<String> splitPdf(String filePath) {
+		ArrayList<String> pathOfChunkFiles = new ArrayList<>();
 		try {
 			String fileNameDontHaveExtension = filePath.replace(".pdf", "").replaceAll(" ", "");
-			String outputFolder = "output";
 			PDDocument document = PDDocument.load(new File(filePath));
 			int totalPages = document.getNumberOfPages();
 			int fileIndex = 1;
 
-			ArrayList<String> pathOfChunkFiles = new ArrayList<>();
 			for (int start = 0; start < totalPages; start += MAX_PAGES_PER_FILE) {
 				int end = Math.min(fileIndex * MAX_PAGES_PER_FILE, totalPages);
 
@@ -29,17 +45,17 @@ public class PdfConvertionHelper {
 					chunkDocument.addPage(document.getPage(page));
 				}
 
-				String outputPdf = outputFolder + "/" + fileNameDontHaveExtension + "_part_" + fileIndex + ".pdf";
+				String outputPdf = OUTPUT_FOLDER + "/" + fileNameDontHaveExtension + "_part_" + fileIndex + ".pdf";
 				pathOfChunkFiles.add(outputPdf);
 				chunkDocument.save(outputPdf);
 				chunkDocument.close();
 				fileIndex++;
 			}
 			document.close();
-			this.combineChunkFiles(pathOfChunkFiles);
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
+		return pathOfChunkFiles;
 	}
 
 	private ArrayList<String> convertChunkPdfToDocx(ArrayList<String> chunkFiles) {
@@ -62,14 +78,10 @@ public class PdfConvertionHelper {
 		return docFilePaths;
 	}
 
-	private void combineChunkFiles(ArrayList<String> chunkFiles) {
-		ArrayList<String> fileDocxPaths = this.convertChunkPdfToDocx(chunkFiles);
-		Collections.sort(fileDocxPaths);
-		CombineDocx.combineFiles(fileDocxPaths);
-	}
-
 	public static void main(String[] args) {
-		(new PdfConvertionHelper()).splitPdf("GK_DTDM.pdf");
+		PdfConvertionHelper helper = new PdfConvertionHelper();
+		helper.convertPdfToDoc("GK_DTDM.pdf", "GK_DTDM.docx");
+		helper.convertPdfToDoc("Math 4 _Optimizations_4.pdf", "Math 4 _Optimizations_4.docx");
 	}
 }
 
