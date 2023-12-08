@@ -6,11 +6,14 @@ import com.spire.doc.Document;
 import com.spire.doc.FileFormat;
 import com.spire.doc.Section;
 
+import utils.Utils;
+
 public class CombineDocx {
 
 	public static void combineFiles(ArrayList<String> docFilePaths, String output) {
 		Document firstDocument = new Document();
 		firstDocument.loadFromFile(docFilePaths.get(0), FileFormat.Docx);
+		Utils.deleteFile(docFilePaths.get(0));
 
 		for (int i = 1; i < docFilePaths.size(); i++) {
 			Document documentMerge = new Document();
@@ -21,6 +24,7 @@ public class CombineDocx {
 				Section section = (Section) sectionObj;
 				firstDocument.getSections().add(section.deepClone());
 			}
+			Utils.deleteFile(docFilePaths.get(i));
 		}
 
 		firstDocument.saveToFile(output, FileFormat.Docx);

@@ -9,6 +9,9 @@ import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class Utils {
 	public static Connection getConnection() {
@@ -40,4 +43,13 @@ public class Utils {
 		}
 		return date;
 	}
+	
+	public static void deleteFile(String filePath) {
+        try {
+        	Path path = Paths.get(filePath);
+            Files.deleteIfExists(path);
+		} catch (Exception e) {
+			System.err.println(e.getMessage());
+		}
+    }
 }
