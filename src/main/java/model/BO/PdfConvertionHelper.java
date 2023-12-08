@@ -12,17 +12,25 @@ import com.spire.pdf.PdfDocument;
 import utils.Utils;
 
 public class PdfConvertionHelper {
-	private static final String OUTPUT_FOLDER = "output";
 	private static final int MAX_PAGES_PER_FILE = 10;
 
-	private void convertPdfToDoc(String fileInput, String fileOutput) {
-		Thread t = new Thread(() -> {
-			ArrayList<String> pathOfChunkFiles = this.splitPdf(fileInput);
-			ArrayList<String> fileDocxPaths = this.convertChunkPdfToDocx(pathOfChunkFiles);
-			Collections.sort(fileDocxPaths);
-			CombineDocx.combineFiles(fileDocxPaths, OUTPUT_FOLDER + "/" + fileOutput);
-		});
-		t.start();
+	public static void convertPdfToDoc(String fileInput) {
+		try {
+			File f = new File(fileInput);
+			if (f.exists()) {
+				String fileOutput = fileInput.replace(".pdf", ".docx");
+				convertPdfToDoc(fileInput, fileOutput);
+			}
+		} catch (Exception e) {
+
+		}
+	}
+
+	private static void convertPdfToDoc(String fileInput, String fileOutput) {
+		ArrayList<String> pathOfChunkFiles = splitPdf(fileInput);
+		ArrayList<String> fileDocxPaths = convertChunkPdfToDocx(pathOfChunkFiles);
+		Collections.sort(fileDocxPaths);
+		CombineDocx.combineFiles(fileDocxPaths, fileOutput);
 	}
 
 	/**
@@ -31,7 +39,7 @@ public class PdfConvertionHelper {
 	 * @param filePath Đường dẫn file đầu vào
 	 * @return ArrayList<String>: đường dẫn của các file pdf được chunk ra
 	 */
-	private ArrayList<String> splitPdf(String filePath) {
+	private static ArrayList<String> splitPdf(String filePath) {
 		ArrayList<String> pathOfChunkFiles = new ArrayList<>();
 		try {
 			String fileNameDontHaveExtension = filePath.replace(".pdf", "").replaceAll(" ", "");
@@ -47,7 +55,7 @@ public class PdfConvertionHelper {
 					chunkDocument.addPage(document.getPage(page));
 				}
 
-				String outputPdf = OUTPUT_FOLDER + "/" + fileNameDontHaveExtension + "_part_" + fileIndex + ".pdf";
+				String outputPdf = fileNameDontHaveExtension + "_part_" + fileIndex + ".pdf";
 				pathOfChunkFiles.add(outputPdf);
 				chunkDocument.save(outputPdf);
 				chunkDocument.close();
@@ -60,7 +68,7 @@ public class PdfConvertionHelper {
 		return pathOfChunkFiles;
 	}
 
-	private ArrayList<String> convertChunkPdfToDocx(ArrayList<String> chunkFiles) {
+	private static ArrayList<String> convertChunkPdfToDocx(ArrayList<String> chunkFiles) {
 		ArrayList<String> docFilePaths = new ArrayList<>();
 		try {
 			ArrayList<ConvertDocxThread> threads = new ArrayList<>();
@@ -74,16 +82,10 @@ public class PdfConvertionHelper {
 			for (ConvertDocxThread thread : threads) {
 				thread.join();
 			}
-			System.out.println("Done");
+			System.out.println("Convert to docx done");
 		} catch (Exception e) {
 		}
 		return docFilePaths;
-	}
-
-	public static void main(String[] args) {
-		PdfConvertionHelper helper = new PdfConvertionHelper();
-		helper.convertPdfToDoc("GK_DTDM.pdf", "GK_DTDM.docx");
-		helper.convertPdfToDoc("Math 4 _Optimizations_4.pdf", "Math 4 _Optimizations_4.docx");
 	}
 }
 
