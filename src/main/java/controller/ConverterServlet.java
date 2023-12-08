@@ -2,8 +2,11 @@ package controller;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Collection;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -11,9 +14,6 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Collection;
 import javax.servlet.http.Part;
 
 @WebServlet("/ConverterServlet")
@@ -27,66 +27,67 @@ public class ConverterServlet extends HttpServlet {
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		// Đường dẫn đến file đã xử lý
-		String filePath = "path/to/processed/file.pdf";
-
-		// Thiết lập các thông số trả về
-		response.setContentType("application/pdf");
-		response.setHeader("Content-Disposition", "attachment; filename=file.pdf");
-
-		try (InputStream in = new FileInputStream(filePath); OutputStream out = response.getOutputStream()) {
-			// Đọc dữ liệu từ file và ghi vào phản hồi
-			byte[] buffer = new byte[4096];
-			int bytesRead;
-			while ((bytesRead = in.read(buffer)) != -1) {
-				out.write(buffer, 0, bytesRead);
-			}
-		}
 	}
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		// Lấy tất cả các phần (parts) được gửi từ yêu cầu
 		Collection<Part> parts = request.getParts();
-
+		String filePathInServer = "";
 		for (Part part : parts) {
-			// Lấy tên của phần (trường file)
-			String fileName = getFileName(part);
-
-			InputStream fileContent = part.getInputStream();
-
-			String savePath = "";
-
-			// Tạo đường dẫn đầy đủ để lưu file
-			String filePath = savePath + File.separator + fileName;
-
-			// Lưu file vào đường dẫn đã xác định
-			try (OutputStream out = new FileOutputStream(new File(filePath));
-					InputStream fileInputStream = fileContent) {
-				int read;
-				final byte[] bytes = new byte[1024];
-				while ((read = fileInputStream.read(bytes)) != -1) {
-					out.write(bytes, 0, read);
-				}
-				System.out.println("File saved successfully: " + filePath);
-			} catch (IOException e) {
-				System.out.println("Error saving file: " + e.getMessage());
+			String folderUpload = request.getServletContext().getRealPath("/upload");
+			String fileName = Path.of(part.getSubmittedFileName()).getFileName().toString();
+			if (!Files.exists(Path.of(folderUpload))) {
+				Files.createDirectory(Path.of(folderUpload));
 			}
 
-			// In thông báo về tên file đã nhận được
-			System.out.println("Received file: " + fileName);
+			filePathInServer = folderUpload + "/" + fileName;
+			part.write(folderUpload + "/" + fileName);
 		}
+
+		System.out.println("Fileupload:" + filePathInServer);
+
+		ConverterThread thread = new ConverterThread(filePathInServer);
+		thread.start();
+		try {
+			thread.join();
+
+			// Xoá pdf upload, mấy cái file tạm
+			this.downloadFile(request, response, filePathInServer.replaceAll(".pdf", ".docx"));
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
 	}
 
-	// Hàm utility để lấy tên file từ một phần
-	private String getFileName(Part part) {
-		String contentDisposition = part.getHeader("content-disposition");
-		String[] tokens = contentDisposition.split(";");
-		for (String token : tokens) {
-			if (token.trim().startsWith("filename")) {
-				return token.substring(token.indexOf('=') + 1).trim().replace("\"", "");
+	private void downloadFile(HttpServletRequest request, HttpServletResponse response, String filePath) {
+		try {
+			String fileName = new File(filePath).getName();
+
+			String mimeType = getServletContext().getMimeType(fileName);
+
+			if (mimeType == null) {
+				mimeType = "application/octet-stream";
 			}
+
+			// Thiết lập thông số của response để trình duyệt hiểu là file download
+			response.setContentType(mimeType);
+			response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+
+			// Đọc dữ liệu từ file và ghi vào OutputStream của response
+			try (FileInputStream fileInputStream = new FileInputStream(filePath);
+					OutputStream outputStream = response.getOutputStream()) {
+				byte[] buffer = new byte[4096];
+				int bytesRead = -1;
+				long total = 0;
+				while ((bytesRead = fileInputStream.read(buffer)) != -1) {
+					total += bytesRead;
+					outputStream.write(buffer, 0, bytesRead);
+				}
+				System.out.println("Tổng bytes:" + total);
+			}
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
 		}
-		return "unknown";
 	}
 }

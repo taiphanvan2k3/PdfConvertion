@@ -28,5 +28,6 @@ public class CombineDocx {
 		}
 
 		firstDocument.saveToFile(output, FileFormat.Docx);
+		System.out.println("Combine done");
 	}
 }
