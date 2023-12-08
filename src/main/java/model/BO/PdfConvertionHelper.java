@@ -9,6 +9,8 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import com.spire.pdf.FileFormat;
 import com.spire.pdf.PdfDocument;
 
+import utils.Utils;
+
 public class PdfConvertionHelper {
 	private static final String OUTPUT_FOLDER = "output";
 	private static final int MAX_PAGES_PER_FILE = 10;
@@ -104,6 +106,7 @@ class ConvertDocxThread extends Thread {
 			document.close();
 			this.docFilePaths.add(docFilePath);
 			System.out.println(filePath + " end");
+			Utils.deleteFile(filePath);
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
