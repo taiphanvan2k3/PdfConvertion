@@ -1,6 +1,8 @@
 package utils;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -18,9 +20,9 @@ public class Utils {
 		Connection conn = null;
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
-			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/online-exam", "root", "");
+			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/pdf_convertion", "root", "");
 		} catch (Exception e) {
-			System.out.println("Fail");
+			System.out.println(e.getMessage());
 		}
 		return conn;
 	}
@@ -50,6 +52,38 @@ public class Utils {
 			Files.deleteIfExists(path);
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
+		}
+	}
+
+	public static void downloadFile(HttpServletRequest request, HttpServletResponse response, String fileName) {
+		try {
+			System.out.println("Downloading: " + fileName);
+
+			String filePath = request.getServletContext().getRealPath("/upload") + "/" + fileName;
+			String mimeType = request.getServletContext().getMimeType(fileName);
+
+			if (mimeType == null) {
+				mimeType = "application/octet-stream";
+			}
+
+			// Thiết lập thông số của response để trình duyệt hiểu là file download
+			response.setContentType(mimeType);
+			response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+
+			// Đọc dữ liệu từ file và ghi vào OutputStream của response
+			try (FileInputStream fileInputStream = new FileInputStream(filePath);
+					OutputStream outputStream = response.getOutputStream()) {
+				byte[] buffer = new byte[4096];
+				int bytesRead = -1;
+				long total = 0;
+				while ((bytesRead = fileInputStream.read(buffer)) != -1) {
+					total += bytesRead;
+					outputStream.write(buffer, 0, bytesRead);
+				}
+				System.out.println("Tổng bytes:" + total);
+			}
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
 		}
 	}
 }

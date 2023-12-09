@@ -11,23 +11,40 @@ import utils.Utils;
 public class CombineDocx {
 
 	public static void combineFiles(ArrayList<String> docFilePaths, String output) {
-		Document firstDocument = new Document();
-		firstDocument.loadFromFile(docFilePaths.get(0), FileFormat.Docx);
-		Utils.deleteFile(docFilePaths.get(0));
+		Thread combineDocxThread = new Thread(() -> {
+			Document firstDocument = new Document();
+			firstDocument.loadFromFile(docFilePaths.get(0), FileFormat.Docx);
 
-		for (int i = 1; i < docFilePaths.size(); i++) {
-			Document documentMerge = new Document();
-			documentMerge.loadFromFile(docFilePaths.get(i), FileFormat.Docx);
+			for (int i = 1; i < docFilePaths.size(); i++) {
+				Document documentMerge = new Document();
+				documentMerge.loadFromFile(docFilePaths.get(i), FileFormat.Docx);
 
-			// Merge files
-			for (Object sectionObj : documentMerge.getSections()) {
-				Section section = (Section) sectionObj;
-				firstDocument.getSections().add(section.deepClone());
+				// Merge files
+				for (Object sectionObj : documentMerge.getSections()) {
+					Section section = (Section) sectionObj;
+					firstDocument.getSections().add(section.deepClone());
+				}
 			}
-			Utils.deleteFile(docFilePaths.get(i));
-		}
 
-		firstDocument.saveToFile(output, FileFormat.Docx);
-		System.out.println("Combine done");
+			firstDocument.saveToFile(output, FileFormat.Docx);
+			System.out.println("Combine done");
+		});
+
+		combineDocxThread.start();
+		try {
+			// Đảm bảo các luồng convert file pdf qua docx, comvbine file docx đã hoàn thành
+			// mới thực hện đi xoá các file tạo ra trong quá trình làm
+			combineDocxThread.join();
+			deleteTemporalFiles(docFilePaths);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static void deleteTemporalFiles(ArrayList<String> temporalFiles) {
+		for (String filePath : temporalFiles) {
+			Utils.deleteFile(filePath);
+			Utils.deleteFile(filePath.replace(".docx", ".pdf"));
+		}
 	}
 }
