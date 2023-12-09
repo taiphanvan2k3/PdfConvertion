@@ -3,6 +3,7 @@ package controller;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 
@@ -14,9 +15,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
+import model.BEAN.Upload;
+import model.BO.ConvertBO;
+import utils.Utils;
+
 import model.BO.ConverterBO;
 import model.BO.ConverterThread;
-import utils.Utils;
 
 @WebServlet("/ConverterServlet")
 @MultipartConfig
@@ -29,6 +33,7 @@ public class ConverterServlet extends HttpServlet {
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
+
 	}
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -64,7 +69,6 @@ public class ConverterServlet extends HttpServlet {
 
 			// Lưu lịch sử lại DB
 			this.saveHistory("admin", fileName, fileOutput);
-			Utils.downloadFile(request, response, fileName.replace(".pdf", ".docx"));
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
