@@ -1,6 +1,4 @@
-package controller;
-
-import model.BO.PdfConvertionHelper;
+package model.BO;
 
 public class ConverterThread extends Thread {
 	private String filePath;
