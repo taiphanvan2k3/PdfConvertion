@@ -24,7 +24,7 @@
           converted</h1>
       </div>
       <%
-      if (uploads != null) {
+      if (uploads != null && uploads.size() > 0) {
       %>
       <table class="styled-table">
         <thead class="thead-dark">
@@ -58,7 +58,7 @@
       <%
       } else {
       %>
-      <h3>Not have data is converted</h3>
+      <h3>You haven't converted file before.</h3>
       <%
       }
       %>

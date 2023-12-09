@@ -66,7 +66,6 @@ public class ConverterServlet extends HttpServlet {
 
 			// Lưu lịch sử lại DB
 			String username = (String) request.getSession().getAttribute("username");
-			username = "admin";
 			if (username != null) {
 				// Chỉ lưu lại lịch sử nếu user đã đăng nhập
 				this.saveHistory(username, fileNameUserUpload, fileNameInServer);
