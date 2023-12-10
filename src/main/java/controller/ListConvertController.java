@@ -23,7 +23,8 @@ public class ListConvertController extends HttpServlet {
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		ArrayList<Upload> uploads = (new ConverterBO()).getListFileConvert("admin");
+		ArrayList<Upload> uploads = (new ConverterBO())
+				.getListFileConvert((String) request.getSession().getAttribute("username"));
 		request.getSession().setAttribute("uploads", uploads);
 		Utils.redirectToPage(request, response, "/viewListConvert.jsp");
 	}
