@@ -1,30 +1,46 @@
 package model.BEAN;
 
 public class Upload {
-	private String fileUpload;
-	private String fileConverted;
+	private String fileNameUpload;
+	private String fileNameOutput;
+	private String fileNameOutputInServer;
 	private String date;
-	public Upload(String fileUpload, String fileConverted, String date) {
-		super();
-		this.fileUpload = fileUpload;
-		this.fileConverted = fileConverted;
+
+	public Upload(String fileNameUpload, String fileNameOutput, String fileNameOutputInServer, String date) {
+		this.fileNameUpload = fileNameUpload;
+		this.fileNameOutput = fileNameOutput;
+		this.fileNameOutputInServer = fileNameOutputInServer;
 		this.date = date;
 	}
-	public String getFileUpload() {
-		return fileUpload;
+
+	public String getFileNameUpload() {
+		return fileNameUpload;
 	}
-	public void setFileUpload(String fileUpload) {
-		this.fileUpload = fileUpload;
+
+	public void setFileNameUpload(String fileNameUpload) {
+		this.fileNameUpload = fileNameUpload;
 	}
-	public String getFileConverted() {
-		return fileConverted;
+
+	public String getFileNameOutput() {
+		return fileNameOutput;
 	}
-	public void setFileConverted(String fileConverted) {
-		this.fileConverted = fileConverted;
+
+	public void setFileNameOutput(String fileNameOutput) {
+		this.fileNameOutput = fileNameOutput;
 	}
+
+	public String getFileNameOutputInServer() {
+		return fileNameOutputInServer;
+	}
+
+	public void setFileNameOutputInServer(String fileNameOutputInServer) {
+		this.fileNameOutputInServer = fileNameOutputInServer;
+	}
+
 	public String getDate() {
 		return date;
 	}
+
 	public void setDate(String date) {
 		this.date = date;
 	}
