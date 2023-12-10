@@ -57,6 +57,8 @@ public class Utils {
 
 	public static void downloadFile(HttpServletRequest request, HttpServletResponse response, String fileName) {
 		try {
+			String fileNameOutput = fileName.substring(fileName.indexOf("_") + 1);
+			System.out.println("Output:" + fileNameOutput);
 			System.out.println("Downloading: " + fileName);
 
 			String filePath = request.getServletContext().getRealPath("/upload") + "/" + fileName;
@@ -68,7 +70,7 @@ public class Utils {
 
 			// Thiết lập thông số của response để trình duyệt hiểu là file download
 			response.setContentType(mimeType);
-			response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+			response.setHeader("Content-Disposition", "attachment; filename=\"" + fileNameOutput + "\"");
 
 			// Đọc dữ liệu từ file và ghi vào OutputStream của response
 			try (FileInputStream fileInputStream = new FileInputStream(filePath);

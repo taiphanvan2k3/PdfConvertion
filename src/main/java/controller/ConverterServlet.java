@@ -3,7 +3,6 @@ package controller;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 
@@ -15,12 +14,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
-import model.BEAN.Upload;
-import model.BO.ConvertBO;
-import utils.Utils;
-
 import model.BO.ConverterBO;
 import model.BO.ConverterThread;
+import utils.Utils;
 
 @WebServlet("/ConverterServlet")
 @MultipartConfig
@@ -41,22 +37,25 @@ public class ConverterServlet extends HttpServlet {
 		// Lấy tất cả các phần (parts) được gửi từ yêu cầu
 		Collection<Part> parts = request.getParts();
 		String filePathInServer = "";
-		String fileName = "";
+		String fileNameInServer = "";
+		String fileNameUserUpload = "";
+
 		for (Part part : parts) {
 			String folderUpload = request.getServletContext().getRealPath("/upload");
 
 			Date now = new Date();
-			fileName = now.getTime() + "_" + Path.of(part.getSubmittedFileName()).getFileName().toString();
+			fileNameUserUpload = Path.of(part.getSubmittedFileName()).getFileName().toString();
+			fileNameInServer = now.getTime() + "_" + fileNameUserUpload;
 			if (!Files.exists(Path.of(folderUpload))) {
 				Files.createDirectory(Path.of(folderUpload));
 			}
 
-			filePathInServer = folderUpload + "/" + fileName;
+			filePathInServer = folderUpload + "/" + fileNameInServer;
 			part.write(filePathInServer);
 		}
 
-		System.out.println("Fileupload: " + filePathInServer);
-
+		System.out.println("Filename user upload: " + fileNameUserUpload);
+		System.out.println("File upload in server: " + filePathInServer);
 		ConverterThread thread = new ConverterThread(filePathInServer);
 		thread.start();
 		try {
@@ -65,19 +64,23 @@ public class ConverterServlet extends HttpServlet {
 			// Xoá file đã upload lên lúc nãy
 			Utils.deleteFile(filePathInServer);
 
-			String fileOutput = filePathInServer.replace(".pdf", ".docx");
-
 			// Lưu lịch sử lại DB
-			this.saveHistory("admin", fileName, fileOutput);
+			String username = (String) request.getSession().getAttribute("username");
+			username = "admin";
+			if (username != null) {
+				// Chỉ lưu lại lịch sử nếu user đã đăng nhập
+				this.saveHistory(username, fileNameUserUpload, fileNameInServer);
+			}
+			Utils.downloadFile(request, response, fileNameInServer.replace(".pdf", ".docx"));
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 
 	}
 
-	private void saveHistory(String username, String fileNameUpload, String filePathOutput) {
+	private void saveHistory(String username, String fileNameUpload, String fileNameInServer) {
 		Thread saveHistoryThread = new Thread(() -> {
-			(new ConverterBO()).saveHistory(username, fileNameUpload, filePathOutput);
+			(new ConverterBO()).saveHistory(username, fileNameUpload, fileNameInServer);
 		});
 		saveHistoryThread.start();
 	}
