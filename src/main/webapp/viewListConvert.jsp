@@ -44,7 +44,7 @@
             <td class="text-center"><%=i%></td>
             <td class="text-center"><%=upload.getFileNameUpload()%></td>
             <td class="text-center"><a
-                href="./DownloadFileController?action=downloadfile&fileName=<%=upload.getFileNameOutputInServer()%>"
+                href="./DownloadFileServlet?action=downloadfile&fileName=<%=upload.getFileNameOutputInServer()%>"
                 target="_blank"
               ><%=upload.getFileNameOutput()%></a></td>
             <td class="text-center"><%=upload.getDate()%></td>

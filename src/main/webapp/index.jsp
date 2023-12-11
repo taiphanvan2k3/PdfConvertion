@@ -24,7 +24,7 @@
     if ((loginStatus != null && loginStatus) || (signUpStatus != null && signUpStatus)) {
     %>
     <div class="content-uploader">
-        <a href="./ListConvertController" class="btn-upload">View list converted</a>
+        <a href="./ListConvertServlet" class="btn-upload">View list converted</a>
     </div>
     <%
     }%>
