@@ -3,6 +3,7 @@ package model.BO;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.concurrent.CountDownLatch;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 
@@ -67,19 +68,18 @@ public class PdfConvertionHelper {
 	}
 
 	private static ArrayList<String> convertChunkPdfToDocx(ArrayList<String> chunkFiles) {
+		CountDownLatch latch = new CountDownLatch(chunkFiles.size());
 		ArrayList<String> docFilePaths = new ArrayList<>();
 		try {
 			ArrayList<ConvertDocxThread> threads = new ArrayList<>();
-
 			for (String filePath : chunkFiles) {
-				ConvertDocxThread thread = new ConvertDocxThread(docFilePaths, filePath);
+				ConvertDocxThread thread = new ConvertDocxThread(docFilePaths, filePath, latch);
 				threads.add(thread);
 				thread.start();
 			}
 
-			for (ConvertDocxThread thread : threads) {
-				thread.join();
-			}
+			// Sử dụng CountDownLatch để đợi tất cả các luồng hoàn thành mới thực hiện tiếp
+			latch.await();
 			System.out.println("Convert to sub docx files done, combining them ...");
 		} catch (Exception e) {
 		}
@@ -88,12 +88,14 @@ public class PdfConvertionHelper {
 }
 
 class ConvertDocxThread extends Thread {
+	private final CountDownLatch latch;
 	private ArrayList<String> docFilePaths;
 	private String filePath;
 
-	public ConvertDocxThread(ArrayList<String> docFilePaths, String filePath) {
+	public ConvertDocxThread(ArrayList<String> docFilePaths, String filePath, CountDownLatch latch) {
 		this.filePath = filePath;
 		this.docFilePaths = docFilePaths;
+		this.latch = latch;
 	}
 
 	private void convert(String filePath) {
@@ -106,9 +108,10 @@ class ConvertDocxThread extends Thread {
 			document.close();
 			this.docFilePaths.add(docFilePath);
 			System.out.println(filePath + " end");
-//			Utils.deleteFile(filePath);
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
+		} finally {
+			latch.countDown();
 		}
 	}
 
