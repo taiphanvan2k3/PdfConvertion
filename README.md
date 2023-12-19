@@ -1,4 +1,12 @@
 **Nếu thấy project này có ích có thể cho mình 1 sao** ⭐
+## Hướng dẫn cài đặt:
+Mở ứng dụng XAMPP, tạo cơ sở dữ liệu có tên là pdf_convertion và import dữ liệu từ file sql vào
+![image](https://github.com/taiphanvan2k3/PdfConvertion/assets/108993284/8f6922e7-a9f1-4a1e-aed8-41ebd3775678)
+![image](https://github.com/taiphanvan2k3/PdfConvertion/assets/108993284/3b4a2918-56fa-471f-ae35-db8f587a44cd)
+![image](https://github.com/taiphanvan2k3/PdfConvertion/assets/108993284/4b4ad4d5-d5ab-4eaa-8561-32e7083a4fa8)
+
+**Chọn import ở cuối trang**
+![image](https://github.com/taiphanvan2k3/PdfConvertion/assets/108993284/f903430a-2b3a-4dea-9990-0dc29c185d81)
 ## 1. Giao diện của ứng dụng sau khi chạy project
 Sử dụng tài khoản có sẵn trong cơ sở dữ liệu hoặc sử dụng chức năng đăng kí để tạo tài khoản mới. Nếu dùng tài khoản có sẵn thì vào database pdf_convertion, tại bảng users, lựa chọn bất kì tài khoản nào có sẵn để dùng:
 ![image](https://github.com/taiphanvan2k3/PdfConvertion/assets/108993284/59c0e86a-f048-410b-92aa-3b604945ff8d)
